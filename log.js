@@ -11,8 +11,12 @@ if (!commander.url) {
 }
 async function consume() {
   while (true) {
-    var response = await request(commander.url);
-    if (response) console.log(response);
+    try {
+      var response = await request(commander.url);
+      if (response) console.log(response);
+    } catch (e) {
+      console.error(e);
+    }
   }
 }
 
