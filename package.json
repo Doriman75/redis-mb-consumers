@@ -1,0 +1,22 @@
+{
+  "name": "redis-mb-consumers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "log.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Doriman75/redis-mb-consumers.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Doriman75/redis-mb-consumers/issues"
+  },
+  "homepage": "https://github.com/Doriman75/redis-mb-consumers#readme",
+  "dependencies": {
+    "request-promise-native": "^1.0.5"
+  }
+}
