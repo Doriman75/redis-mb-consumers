@@ -17,7 +17,7 @@ module.exports = function(f) {
     while (true) {
       try {
         var response = await request(commander.url);
-        if (response) f(response, n++);
+        if (response) f(response, commander, n++);
       } catch (e) {
         console.error(e);
       }
