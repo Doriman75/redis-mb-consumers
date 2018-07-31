@@ -8,17 +8,18 @@ consumer.consume((message) => {
 });
 
 function to_email(message) {
-  var validation_failed = [
+  var error_message = null;
+  [
     consumer.isType("user_id", "string"),
     consumer.isType("email", "object"),
     consumer.isType("email.subject", "string"),
     consumer.isType("email.body", "string")
-  ].find(v => v(message) != "OK");
+  ].find(v => {
+    error_message = v(message);
+    return error_message != "OK"
+  });
 
-  if (validation_failed) {
-    console.warn(validation_failed(message))
-    return;
-  };
+  if (error_message != "OK") return console.warn(error_message)
 
   return {
     "user_id": message.user_id,
