@@ -11,8 +11,12 @@ function doConsume(message) {
 }
 
 consumer.consume([
+  consumer.skipIfEmpty("email"),
+  consumer.isSet("user_id"),
   consumer.isType("user_id", "string"),
   consumer.isType("email", "object"),
+  consumer.isSet("email.subject"),
   consumer.isType("email.subject", "string"),
+  consumer.isSet("email.body"),
   consumer.isType("email.body", "string")
 ], doConsume);

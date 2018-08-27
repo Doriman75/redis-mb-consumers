@@ -10,8 +10,11 @@ function doConsume(message) {
 }
 
 consumer.consume([
+  consumer.skipIfEmpty("sms"),
+  consumer.isSet("user_id"),
   consumer.isType("user_id", "string"),
   consumer.isType("sms", "object"),
+  consumer.isSet("sms.content"),
   consumer.isType("sms.content", "string"),
   consumer.isLE("sms.content.length", 160)
 ], doConsume);

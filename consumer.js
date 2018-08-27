@@ -17,22 +17,36 @@ function get(object, field) {
   }, object)
 }
 
+function validate(validations, message) {
+  for (let v of validations) {
+    let result = v(message);
+    if (result) return result;
+  }
+  return null;
+}
+
+
 module.exports = {
   consume: async function(validations, f) {
     while (true) {
       try {
         var response = await request(commander.url);
-        if (response) {
-          try {
-            let message = JSON.parse(response);
-            let error_messages = validations
-              .map(v => v(message))
-              .filter(m => m != "OK");
-            error_messages.forEach(m => console.warn(new Date().toISOString(), m, JSON.stringify(message)));
-            if (error_messages.length == 0) f(message, commander, n++);
-          } catch (e) {
-            console.warn(new Date().toISOString(), "the message is not a valid json", response);
+        if (!response) continue;
+        try {
+          let message = JSON.parse(response);
+          let error_message = validate(validations, message);
+          if (error_message == "skip") {
+            console.log(new Date().toISOString(), "skip message");
+            continue;
           }
+          if (error_message) {
+            console.warn(new Date().toISOString(), error_message, JSON.stringify(message));
+            continue;
+          }
+          f(message, commander, n++);
+        } catch (e) {
+          console.warn(new Date().toISOString(), "the message is not a valid json", response);
+          console.error(new Date().toISOString(), e)
         }
       } catch (e) {
         console.error(new Date().toISOString(), e);
@@ -42,14 +56,21 @@ module.exports = {
   isLE: (field, value) => {
     return (m) => {
       if (get(m, field) >= value) return `the '${field}' must be less or equals than '${value}'`
-      return "OK"
+    }
+  },
+  skipIfEmpty: (field) => {
+    return (m) => {
+      if (!get(m, field)) return "skip";
+    }
+  },
+  isSet: (field) => {
+    return (m) => {
+      if (!get(m, field)) return `the '${field}' must not be empty`
     }
   },
   isType: (field, type) => {
     return (m) => {
-      if (!get(m, field)) return `the '${field}' must not be empty`
       if (typeof get(m, field) != type) return `the '${field}' must be a string`
-      return "OK"
     }
   }
 }
