@@ -18,21 +18,24 @@ function get(object, field) {
 }
 
 module.exports = {
-  consume: async function(f) {
+  consume: async function(validations, f) {
     while (true) {
       try {
         var response = await request(commander.url);
         if (response) {
           try {
-            f(JSON.parse(response), commander, n++);
+            let message = JSON.parse(response);
+            let error_messages = validations
+              .map(v => v(message))
+              .filter(m => m != "OK");
+            error_messages.forEach(m => console.warn(new Date().toISOString(), m, JSON.stringify(message)));
+            if (error_messages.length == 0) f(message, commander, n++);
           } catch (e) {
-            console.warn("the message is not a valid json", response);
-            break;
+            console.warn(new Date().toISOString(), "the message is not a valid json", response);
           }
-
         }
       } catch (e) {
-        console.error(e);
+        console.error(new Date().toISOString(), e);
       }
     }
   },
