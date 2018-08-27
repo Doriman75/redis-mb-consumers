@@ -22,7 +22,6 @@ function validate(validations, message) {
     let result = v(message);
     if (result) return result;
   }
-  return null;
 }
 
 
