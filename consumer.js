@@ -41,14 +41,14 @@ module.exports = {
   },
   isLE: (field, value) => {
     return (m) => {
-      if (get(m, field) >= value) return "the '" + field + "' must be less or equals than '" + value + "'"
+      if (get(m, field) >= value) return `the '${field}' must be less or equals than '${value}'`
       return "OK"
     }
   },
   isType: (field, type) => {
     return (m) => {
-      if (!get(m, field)) return "the '" + field + "' must not be empty"
-      if (typeof get(m, field) != type) return "the '" + field + "' must be a string"
+      if (!get(m, field)) return `the '${field}' must not be empty`
+      if (typeof get(m, field) != type) return `the '${field}' must be a string`
       return "OK"
     }
   }
