@@ -1,5 +1,6 @@
 function log(level, message) {
-  console[level](new Date().toISOString(), `[${level.toUpperCase()}]`, message);
+  let l = (level.toUpperCase() + "     ").substring(0, 5);
+  console[level](new Date().toISOString(), `[${l}]`, message);
 }
 
 module.exports = {
