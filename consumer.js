@@ -11,11 +11,6 @@ if (!commander.url) {
   process.exit(1);
 }
 
-function get(object, field) {
-  return field.split(".").reduce((result, f) => {
-    return result[f]
-  }, object)
-}
 
 function parse(validations, response) {
   let message = null;
@@ -43,16 +38,21 @@ function parse(validations, response) {
   return message;
 }
 
+function get(object, field) {
+  return field.split(".").reduce((result, f) => {
+    return result[f]
+  }, object)
+}
 
 var validators = {
-  isLE(field, value) {
-    return (m) => {
-      if (get(m, field) >= value) return `the '${field}' must be less or equals than '${value}'`
-    }
-  },
   skipIfEmpty(field) {
     return (m) => {
       if (!get(m, field)) return "skip";
+    }
+  },
+  isLE(field, value) {
+    return (m) => {
+      if (get(m, field) >= value) return `the '${field}' must be less or equals than '${value}'`
     }
   },
   isSet(field) {
