@@ -1,6 +1,11 @@
+var labels = {
+  "log": "DEBUG",
+  "warn": "WARN ",
+  "error": "ERROR"
+}
+
 function log(level, message) {
-  let l = (level.toUpperCase() + "     ").substring(0, 5);
-  console[level](new Date().toISOString(), `[${l}]`, message);
+  console[level](new Date().toISOString(), `[${labels[level]}]`, message);
 }
 
 module.exports = {
