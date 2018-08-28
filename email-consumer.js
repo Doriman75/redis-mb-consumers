@@ -1,4 +1,5 @@
 const consumer = require("./consumer");
+const log = require("./log");
 
 function doConsume(message) {
   var email = {
@@ -6,17 +7,17 @@ function doConsume(message) {
     "subject": message.email.subject,
     "body": message.email.body
   }
-  console.log("sending", email.subject, "to", email.user_id);
-  console.log("email sent");
+  log.debug(`sending ${email.subject} to ${email.user_id}`);
+  log.debug("email sent");
 }
 
 consumer.consume([
-  consumer.skipIfEmpty("email"),
-  consumer.isSet("user_id"),
-  consumer.isType("user_id", "string"),
-  consumer.isType("email", "object"),
-  consumer.isSet("email.subject"),
-  consumer.isType("email.subject", "string"),
-  consumer.isSet("email.body"),
-  consumer.isType("email.body", "string")
+  consumer.VALIDATORS.skipIfEmpty("email"),
+  consumer.VALIDATORS.isSet("user_id"),
+  consumer.VALIDATORS.isType("user_id", "string"),
+  consumer.VALIDATORS.isType("email", "object"),
+  consumer.VALIDATORS.isSet("email.subject"),
+  consumer.VALIDATORS.isType("email.subject", "string"),
+  consumer.VALIDATORS.isSet("email.body"),
+  consumer.VALIDATORS.isType("email.body", "string")
 ], doConsume);

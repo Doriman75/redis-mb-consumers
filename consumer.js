@@ -1,3 +1,4 @@
+const log = require("./log");
 const request = require("request-promise-native");
 const commander = require('commander')
   .version("0.0.1")
@@ -6,10 +7,9 @@ const commander = require('commander')
   .option("-s, --speed", "trace number of messages per second")
   .parse(process.argv);
 if (!commander.url) {
-  console.error("url is mandatory")
+  log.error("url is mandatory")
   process.exit(1);
 }
-var n = 0;
 
 function get(object, field) {
   return field.split(".").reduce((result, f) => {
@@ -17,13 +17,55 @@ function get(object, field) {
   }, object)
 }
 
-function validate(validations, message) {
-  for (let v of validations) {
-    let result = v(message);
-    if (result) return result;
+function parse(validations, response) {
+  let message = null;
+  try {
+    message = JSON.parse(response);
+  } catch (e) {
+    log.warn(`the message is not a valid json ${response}`);
+    log.error(e);
+    return;
   }
+
+  let result = null;
+  for (let v of validations) {
+    result = v(message);
+    if (result) break;
+  }
+  if (result == "skip") {
+    log.debug("skip message");
+    return;
+  }
+  if (result) {
+    log.warn(result + `${JSON.stringify(message)}`);
+    return;
+  }
+  return message;
 }
 
+
+var validators = {
+  isLE(field, value) {
+    return (m) => {
+      if (get(m, field) >= value) return `the '${field}' must be less or equals than '${value}'`
+    }
+  },
+  skipIfEmpty(field) {
+    return (m) => {
+      if (!get(m, field)) return "skip";
+    }
+  },
+  isSet(field) {
+    return (m) => {
+      if (!get(m, field)) return `the '${field}' must not be set`
+    }
+  },
+  isType(field, type) {
+    return (m) => {
+      if (typeof get(m, field) != type) return `the '${field}' must be a '${type}'`;
+    }
+  }
+}
 
 module.exports = {
   consume: async function(validations, f) {
@@ -31,52 +73,20 @@ module.exports = {
       try {
         var response = await request(commander.url);
         if (!response) continue;
-        try {
-          let message = JSON.parse(response);
-          let error_message = validate(validations, message);
-          if (error_message == "skip") {
-            console.log(new Date().toISOString(), "skip message");
-            continue;
-          }
-          if (error_message) {
-            console.warn(new Date().toISOString(), error_message, JSON.stringify(message));
-            continue;
-          }
-          f(message, commander, n++);
-        } catch (e) {
-          console.warn(new Date().toISOString(), "the message is not a valid json", response);
-          console.error(new Date().toISOString(), e)
-        }
+        let message = parse(validations, response);
+        if (message) f(message, commander, n++);
       } catch (e) {
-        console.error(new Date().toISOString(), e);
+        log.error(e);
       }
     }
   },
-  isLE: (field, value) => {
-    return (m) => {
-      if (get(m, field) >= value) return `the '${field}' must be less or equals than '${value}'`
-    }
-  },
-  skipIfEmpty: (field) => {
-    return (m) => {
-      if (!get(m, field)) return "skip";
-    }
-  },
-  isSet: (field) => {
-    return (m) => {
-      if (!get(m, field)) return `the '${field}' must not be empty`
-    }
-  },
-  isType: (field, type) => {
-    return (m) => {
-      if (typeof get(m, field) != type) return `the '${field}' must be a string`
-    }
-  }
+  VALIDATORS: validators
 }
 
+var n = 0;
 if (commander.speed) {
   setInterval(() => {
-    console.log(n, "messages per second");
+    log.debug(`${n} messages per second`);
     n = 0;
   }, 1000);
 }
